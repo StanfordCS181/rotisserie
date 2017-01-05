@@ -1,0 +1,38 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{First-day writing assignment (Therac 25)} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name}.</h4><p>};
+
+print q{To prepare for the first day of class, please read the paper <a href="http://sunnyday.mit.edu/papers/therac.pdf">Medical Devices: the Therac-25</a> (1995), by Nancy Leveson. We suggest reading the paper in multiple passes, to get the outline and larger points before diving in to the details. Start with a quick scan by reading the introduction, the bolded headings, and all of the figures. Scan the last section (&ldquo;Causal Factors&rdquo;). Get an idea of the larger structure and message of the paper. Then, read the paper fully from the beginning. Take notes as you read. What do you find surprising? Are there statements you disagree with? What larger points is the author trying to make?<p>};
+
+print q{<b>Writing assignment:</b> You have been hired as an intern at a medical-device manufacturer. You receive the following memo from your boss:<p>};
+
+print qq{<div class="well">
+<b>To:</b> ${display_name}<br>
+<b>From:</b> The Boss<br>
+<b>Subject:</b> Request for memo re: Therac 25<br><br>
+
+We are aware of a series of tragic incidents related to the Therac 25 linac, and curious what implications this case study may have for our own medical-device business. Please prepare a 600-word technical memo for our engineering and management staff on the following topics.<p>
+
+<ol type="a">
+<li>What should our staff know about the Therac 25 and these incidents?
+
+<li>What is one engineering recommendation you would make to our technical staff, as a result of these incidents? <span class="text-muted">Support this recommendation with persuasive evidence.</span>
+
+<li>What is one procedural recommendation you would make to our management staff, as a result of these incidents? <span class="text-muted">Support this recommendation with persuasive evidence.</span>
+</ol>
+</div><p>};
+
+print q{Please write your memo below by noon on January 9.<p>};
+
+&finish;
