@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+use strict;
+use CGI;
+use HTML::Scrubber;
+
+require q{login.pl};
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+my $cgi = CGI->new;
+
+die unless defined $sunetid;
+
+my $assignment = $cgi->param( q{assignment} );
+die unless defined $assignment;
+die unless $assignment eq q{therac};
+
+my $referer = $cgi->referer;
+
+die unless $referer eq q{https://cs181.keithw.org/} . $assignment;
+
+my $content = $cgi->param( q{content} );
+die unless defined $content;
+
+my $scrubber = HTML::Scrubber->new( allow => [ qw[ div strong br em del h1 blockquote pre ul li ol ] ] );
+$scrubber->default( 0, { q{*} => 0 } ); # be explicit about forbidding attributes
+
+my $content_scrubbed = $scrubber->scrub( $content );
+
+my $insert = $dbh->prepare( q{INSERT INTO writing (sunetid, assignment, contents) VALUES (?,?,?)} ) or die qq{$DBI::errstr};
+
+$insert->execute( $sunetid, $assignment, $content_scrubbed ) or die qq{$DBI::errstr};
+
+print qq{Location: $referer\n\n};

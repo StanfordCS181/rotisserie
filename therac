@@ -3,6 +3,7 @@
 use strict;
 require q{login.pl};
 use HTML::Entities;
+use POSIX;
 
 print qq{Content-type: text/html\n\n};
 
@@ -39,18 +40,20 @@ print q{Please write your memo below by noon on January 9.<p><hr><p>};
 my $text = qq{<b>To:</b> The Boss<br><b>From:</b> ${display_name}<br><b>Subject:</b> Re: Request for memo re: Therac 25<br><br>[memo goes here]};
 my $timestamp = q{never};
 
-my $lastversion = $dbh->prepare( q{SELECT contents, submitted FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
 
 $lastversion->execute( $sunetid, q{therac} ) or die qq{$DBI::errstr};
 
 if ( my $data = $lastversion->fetchrow_hashref ) {
-    $text = HTML::Entities::encode_entites( $data->{ contents }, q{'} );
-    $timestamp = $data->{ submitted };
-}
+    $text = HTML::Entities::encode_entities( $data->{ contents }, q{'} );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
 
 print <<"END";
 <form action='/submit' method='post'>
-<input id='default' type='hidden' name='default' value='${text}'>
+<input id='default' type='hidden' name='content' value='${text}'>
 <trix-editor input='default'></trix-editor>
 <input name='assignment' type='hidden' value='therac'><br>
 <div class="col-md-4">Last saved: ${timestamp}</div>
