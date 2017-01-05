@@ -52,13 +52,25 @@ if ( my $data = $lastversion->fetchrow_hashref ) {
 
 
 print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); } );
+document.addEventListener("trix-initialize", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); } );
+</script>
+
 <form action='/submit' method='post'>
 <input id='default' type='hidden' name='content' value='${text}'>
-<trix-editor input='default'></trix-editor>
+<trix-editor id='trix-editor' input='default'></trix-editor>
 <input name='assignment' type='hidden' value='therac'><br>
-<div class="col-md-6">Last saved: ${timestamp}</div>
-<div class="col-md-6"><div align="right"><input type='submit' value='Save'> (can continue to edit until the deadline)</div></div>
+<div class="col-md-6"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span></div>
+<div class="col-md-6"><div align="right"><input type='submit' value='Save'> <span class="text-muted">(can continue to edit until the deadline)</span></div></div>
 </form>
 END
-    
+
 &finish;
