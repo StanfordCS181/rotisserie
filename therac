@@ -56,9 +56,8 @@ print <<"END";
 <input id='default' type='hidden' name='content' value='${text}'>
 <trix-editor input='default'></trix-editor>
 <input name='assignment' type='hidden' value='therac'><br>
-<div class="col-md-4">Last saved: ${timestamp}</div>
-<div class="col-md-4"></div>
-<div class="col-md-4"><div align="right"><input type='submit' value='Save'></div></div>
+<div class="col-md-6">Last saved: ${timestamp}</div>
+<div class="col-md-6"><div align="right"><input type='submit' value='Save'> (can continue to edit until the deadline)</div></div>
 </form>
 END
     
