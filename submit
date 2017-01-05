@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use HTML::Scrubber;
+use utf8;
 
 require q{login.pl};
 
@@ -27,6 +28,8 @@ die unless defined $content;
 
 my $scrubber = HTML::Scrubber->new( allow => [ qw[ div strong br em del h1 blockquote pre ul li ol ] ] );
 $scrubber->default( 0, { q{*} => 0 } ); # be explicit about forbidding attributes
+
+utf8::decode $content;
 
 my $content_scrubbed = $scrubber->scrub( $content );
 
