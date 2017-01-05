@@ -13,7 +13,7 @@ die unless $class eq q{CS181} or $class eq q{CS181W};
 
 my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2017} ) or die qq{$DBI::errstr};
 
-my $adder = $dbh->prepare( q{INSERT INTO students (sunetid, class) VALUES (?, ?) ON CONFLICT (sunetid) DO UPDATE SET conflict = TRUE} ) or die qq{$DBI::errstr};
+my $adder = $dbh->prepare( q{INSERT INTO users (sunetid, class) VALUES (?, ?) ON CONFLICT (sunetid) DO UPDATE SET conflict = TRUE} ) or die qq{$DBI::errstr};
 
 while ( <STDIN> ) {
   chomp;
