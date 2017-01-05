@@ -14,6 +14,11 @@
 
     <link rel="stylesheet" type="text/css" href="/TrixCSS">
     <script type="text/javascript" src="/TrixJS"></script>
+    <script type="text/javascript">
+      document.addEventListener("trix-file-accept", function(event) {
+      event.preventDefault();
+      });
+    </script>
   </head>
 
   <body role="document">
