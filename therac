@@ -45,7 +45,7 @@ my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted
 $lastversion->execute( $sunetid, q{therac} ) or die qq{$DBI::errstr};
 
 if ( my $data = $lastversion->fetchrow_hashref ) {
-    $text = HTML::Entities::encode_entities( $data->{ contents }, q{'} );
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
     $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
     $timestamp =~ s{AM}{a.m.}g;}
     $timestamp =~ s{PM}{p.m.}g;
