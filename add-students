@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+
+if ( scalar @ARGV != 1 ) {
+  die qq{Usage: $0 CLASS\n};
+}
+
+my $class = $ARGV[ 0 ];
+
+die unless $class eq q{CS181} or $class eq q{CS181W};
+
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2017} ) or die qq{$DBI::errstr};
+
+my $adder = $dbh->prepare( q{INSERT INTO students (sunetid, class) VALUES (?, ?) ON CONFLICT (sunetid) DO UPDATE SET conflict = TRUE} ) or die qq{$DBI::errstr};
+
+while ( <STDIN> ) {
+  chomp;
+  my @email = split /\s+/, $_;
+  for ( @email ) {
+    s{\,$}{}g;
+    die qq{invalid email A: $_} unless m{\@stanford.edu$};
+    s{\@stanford.edu$}{};
+    die qq{invalid email B: $_} if m{[^a-z0-9]};
+
+    print STDERR qq{Inserting $_ ($class)... };
+    $adder->execute( $_, $class ) or die qq{$DBI::errstr};
+    print STDERR qq{done.\n};
+  }
+}
