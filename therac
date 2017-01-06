@@ -106,8 +106,8 @@ window.addEventListener("beforeunload", function( event ) {
 <input id='default' type='hidden' name='content' value='${text}'>
 <trix-editor id='trix-editor' input='default'></trix-editor>
 <input name='assignment' type='hidden' value='therac'><br>
-<div class="col-md-6"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
-<div class="col-md-6"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
 </form>
 END
 
