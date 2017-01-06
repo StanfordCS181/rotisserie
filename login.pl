@@ -72,9 +72,9 @@ sub login ($) {
     $class = $data->{ class };
   }
 
-  my $hit = $dbh->prepare( q{INSERT INTO hits ( sunetid, what, name, givenname ) VALUES ( ?, ?, ?, ? )} ) or die qq{$DBI::errstr};
+  my $hit = $dbh->prepare( q{INSERT INTO hits ( sunetid, what, name, givenname, remote_addr ) VALUES ( ?, ?, ?, ?, ? )} ) or die qq{$DBI::errstr};
 
-  $hit->execute( $sunetid, $ENV{'REQUEST_URI'}, $display_name, $first_name ) or die qq{$DBI::errstr};
+  $hit->execute( $sunetid, $ENV{ q{REQUEST_URI} }, $display_name, $first_name, $ENV{ q{REMOTE_ADDR} } ) or die qq{$DBI::errstr};
 
   if ( not defined $class ) {
     print qq{<h4>Unfortunately, we do not have a record that $display_name is registered for CS181 or CS181W. Please contact the course staff if you believe this is in error.</h4>};
