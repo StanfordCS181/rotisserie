@@ -1,0 +1,75 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print <<END;
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CS 181/181W: Computers, Ethics, and Public Policy">
+    <link href="https://stanfordcs181.github.io/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stanfordcs181.github.io/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Text" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="https://stanfordcs181.github.io/stanford.png">
+
+    <script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="/LetterJS"></script>
+    <script type="text/javascript" src="/TextJS"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+  </head>
+
+  <body role="document">
+    <div class="container" role="main">
+END
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+die unless defined $sunetid;
+die unless defined $class;
+
+if ( $class ne q{staff} ) {
+  print qq{<h4>This page is limited to CS181/181W staff.</h4>};
+  &finish;
+}
+
+my $sunetid = "";
+my $name = "";
+
+while ( 1 ) {
+  my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
+  $random_sunetid->execute() or die qq{$DBI::errstr};
+
+  my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
+
+  my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
+  $sunetid_to_name->execute( $sunetid ) or die qq{$DBI::errstr};
+
+  if ( my $data2 = $sunetid_to_name->fetchrow_hashref ) {
+    $name = $data2->{ name };
+    last;
+  }
+}
+
+$name = HTML::Entities::encode_entities( $name );
+
+print qq{<h1 class="tlt" data-in-effect="rollIn">${name}</h1>};
+print q{<script>$('.tlt').textillate( { in: { delayScale: 0.75 } } );</script>};
+print q{<script>$(document).click(function()   { location.reload() });</script>};
+print q{<script>$(document).keydown(function() { location.reload() });</script>};
+
+print q{</div></body>};
