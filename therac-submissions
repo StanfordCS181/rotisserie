@@ -34,7 +34,7 @@ while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $wordcount = scalar (split / +/, $text2);
     $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
     
-    print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt;</span>, about $wordcount words</span></h4>};
+    print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
     print qq{<div class="well trix-content">$data->{ contents }</div><p><hr><p>};
 }
 
