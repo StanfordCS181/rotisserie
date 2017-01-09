@@ -18,7 +18,7 @@ if ( $class ne q{staff} ) {
   &finish;
 }
 
-my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted, hits.timestamp DESC} ) or die qq{$DBI::errstr};
+my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
 
 $all_last_versions->execute( q{therac} ) or die qq{$DBI::errstr};
 

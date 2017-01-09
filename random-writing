@@ -26,6 +26,8 @@ print <<END;
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" type="text/css" href="/TrixCSS">
+    <script type="text/javascript" src="/TrixJS"></script>
     <script type="text/javascript" src="/LetterJS"></script>
     <script type="text/javascript" src="/TextJS"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
@@ -47,29 +49,36 @@ if ( $class ne q{staff} ) {
   &finish;
 }
 
-my $sunetid = "";
 my $name = "";
+my $essay = "";
 
 while ( 1 ) {
   my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
   $random_sunetid->execute() or die qq{$DBI::errstr};
 
   my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
+  
+  my $sunetid_to_essay = $dbh->prepare( q{SELECT contents, name FROM writing, hits WHERE assignment = ? AND writing.sunetid = ? AND hits.sunetid = writing.sunetid ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+  $sunetid_to_essay->execute( q{therac}, $sunetid ) or die qq{$DBI::errstr};
 
-  my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
-  $sunetid_to_name->execute( $sunetid ) or die qq{$DBI::errstr};
-
-  if ( my $data2 = $sunetid_to_name->fetchrow_hashref ) {
+  if ( my $data2 = $sunetid_to_essay->fetchrow_hashref ) {
     $name = $data2->{ name };
+    $essay = $data2->{ contents };
     last;
   }
 }
 
+$sunetid = HTML::Entities::encode_entities( $sunetid );
 $name = HTML::Entities::encode_entities( $name );
 
-print qq{<div style="height:100%; display: flex; align-items: center; justify-content: center;"><h1 class="tlt" data-in-effect="fadeIn">${name}</h1></div>};
-print q{<script>$('.tlt').textillate( { in: { delayScale: 0.75 } } );</script>};
-print q{<script>$(document).click(function()   { location.reload() });</script>};
-print q{<script>$(document).keydown(function(e) { if ( e.which == 34 ) { location.reload(); } });</script>};
+my $text2 = $essay;
+$text2 =~ s{[ \t\n]+/}{ }g;
+my $wordcount = scalar (split / +/, $text2);
+$wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+
+$essay =~ s{$name}{(name)}g;
+
+print qq{<h4><span style="color: white;">${name}</span> <span class="text-muted">(about $wordcount words)</span></h4>};
+print qq{<div class="well trix-content">$essay</div><p><hr><p>};
 
 print q{</div></body>};
