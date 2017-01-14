@@ -17,11 +17,11 @@ die unless defined $sunetid;
 
 my $assignment = $cgi->param( q{assignment} );
 die unless defined $assignment;
-die unless $assignment eq q{therac};
+die unless $assignment eq q{therac} or $assignment eq q{trolley};
 
-my $referer = $cgi->referer;
+#my $referer = $cgi->referer;
 
-die unless $referer eq q{https://cs181.keithw.org/} . $assignment;
+#die unless $referer eq q{https://cs181.keithw.org/} . $assignment;
 
 my $content = $cgi->param( q{content} );
 die unless defined $content;
@@ -37,4 +37,4 @@ my $insert = $dbh->prepare( q{INSERT INTO writing (sunetid, assignment, contents
 
 $insert->execute( $sunetid, $assignment, $content_scrubbed ) or die qq{$DBI::errstr};
 
-print qq{Location: $referer\n\n};
+print qq{Location: https://cs181.keithw.org/$assignment\n\n};

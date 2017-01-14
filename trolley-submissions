@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{Submissions to the trolley assignment} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+if ( $class ne q{staff} ) {
+  print qq{<h4>This page is limited to CS181/181W staff.</h4>};
+  &finish;
+}
+
+my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
+
+$all_last_versions->execute( q{trolley} ) or die qq{$DBI::errstr};
+
+while ( my $data = $all_last_versions->fetchrow_hashref ) {
+    my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );
+    my $name = HTML::Entities::encode_entities( $data->{ name } );
+    my $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;
+    $timestamp =~ s{PM}{p.m.}g;
+
+    my $text2 = $data->{ contents };
+    $text2 =~ s{[ \t\n]+/}{ }g;
+    my $wordcount = scalar (split / +/, $text2);
+    $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+    
+    print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
+    print qq{<div class="well trix-content">$data->{ contents }</div><p><hr><p>};
+}
+
+&finish;
