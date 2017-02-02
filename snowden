@@ -21,6 +21,17 @@ print q{Please flip a coin once. Prepare a 600-word persuasive essay arguing tha
 
 Use persuasive evidence (citing to news reports and to documents Snowden released), and structure your essay with bolded subheadings for your major points. State your thesis and include an executive summary of the argument at the beginning.<p>};
 
+print q{<div class="well">Examples of persuasive writing you may find helpful:
+<ul>
+<li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo shown in class</a>
+<li><a href="http://web.cs.ucdavis.edu/~rogaway/papers/moral.html">Rogaway&rsquo;s &ldquo;The Moral Character of Cryptographic Work&rdquo;</a>
+<li><a href="http://laurakipnis.com/wp-content/uploads/2010/08/My-Title-IX-Inquisition-The-Chronicle-Review-.pdf">Laura Kipnis&rsquo;s &ldquo;My Title IX Inquisition&rdquo;</a>
+<li><a href="https://medium.com/basic-income/self-driving-trucks-are-going-to-hit-us-like-a-human-driven-truck-b8507d9c5961">Argument in favor of a universal basic income</a>
+<li><a href="http://www.columbia.edu/~col8/lobsterarticle.pdf">David Foster Wallace&rsquo;s &ldquo;Consider the Lobster&rdquo;</a>
+<li><a href="http://www.utilitarian.net/singer/by/1972----.htm">Peter Singer&rsquo;s &ldquo;Famine, Affluence, and Morality&rdquo;</a>
+
+</ul></div><p>};
+
 print q{Please save your memo often, and save your final version before class on Wednesday, February 8.<p><hr><p>};
 
 my $text = qq{<b>Coin came up:</b> [please fill in heads or tails]<p>};
