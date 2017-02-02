@@ -59,7 +59,7 @@ while ( 1 ) {
   my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
   
   my $sunetid_to_essay = $dbh->prepare( q{SELECT contents, name FROM writing, hits WHERE assignment = ? AND writing.sunetid = ? AND hits.sunetid = writing.sunetid ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
-  $sunetid_to_essay->execute( q{therac}, $sunetid ) or die qq{$DBI::errstr};
+  $sunetid_to_essay->execute( q{trolley}, $sunetid ) or die qq{$DBI::errstr};
 
   if ( my $data2 = $sunetid_to_essay->fetchrow_hashref ) {
     $name = $data2->{ name };

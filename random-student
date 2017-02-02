@@ -50,13 +50,21 @@ if ( $class ne q{staff} ) {
 my $sunetid = "";
 my $name = "";
 
+my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
+my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
+
+sub limited_random {
+  my @nontalkers = qw[adyuen amoturu aabrown yuex cgoetze cholding csmith95 djp42 evanliu framos1 hrblun jaymoon jchen623 jshom jcamach2 jadamson kenxu95 lallis0n fvera mdenton dworskym mvt2412 mlam4 myang nms2017 nicolasn nmakow pabloh2 rwang7 reglong svansick sidhanth sydli trijeetm whuang6];
+  return $nontalkers[rand @nontalkers];
+};
+
 while ( 1 ) {
-  my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
-  $random_sunetid->execute() or die qq{$DBI::errstr};
+#  $random_sunetid->execute() or die qq{$DBI::errstr};
 
-  my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
+#  my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
 
-  my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
+  my $sunetid = limited_random();
+
   $sunetid_to_name->execute( $sunetid ) or die qq{$DBI::errstr};
 
   if ( my $data2 = $sunetid_to_name->fetchrow_hashref ) {
