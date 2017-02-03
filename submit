@@ -17,7 +17,7 @@ die unless defined $sunetid;
 
 my $assignment = $cgi->param( q{assignment} );
 die unless defined $assignment;
-die unless $assignment eq q{therac} or $assignment eq q{trolley};
+die unless $assignment eq q{therac} or $assignment eq q{trolley} or $assignment eq q{snowden};
 
 #my $referer = $cgi->referer;
 
