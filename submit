@@ -18,7 +18,12 @@ die unless defined $sunetid;
 my $assignment = $cgi->param( q{assignment} );
 die unless defined $assignment;
 #die unless $assignment eq q{therac} or $assignment eq q{trolley} or $assignment eq q{snowden};
-die unless $assignment eq q{snowdenresponse}
+unless ( $assignment eq q{snowdenresponse} ) {
+  print qq{Content-type: text/plain\n\nUnfortunately, submissions for that assignment ($assignment) are no longer accepted.};
+  exit;
+}
+
+die unless $assignment eq q{snowdenresponse};
 
 #my $referer = $cgi->referer;
 

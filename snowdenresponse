@@ -1,0 +1,127 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+my $target_assignment = q{snowden};
+
+print_header( q{Edward Snowden (Response)} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name}.</h4><p>};
+
+print q{Please write a 200-word response to your classmate&rsquo;s essay (below). Did you find the argument persuasive? How would you argue against the points made by the writer, if you had to? What constructive feedback or interesting points can you make, taking the author&rsquo;s own essay as a starting point?<p>
+<div class="well">};
+
+my $response_target = $dbh->prepare( q{SELECT responds_to FROM rotisserie WHERE sunetid = ? AND assignment = ?} ) or die qq{$DBI::errstr};
+$response_target->execute( $sunetid, $target_assignment ) or die qq{$DBI::errstr};
+
+my $target = undef;
+if ( my $data = $response_target->fetchrow_hashref ) {
+  $target = $data->{ responds_to };
+}
+
+if ( not defined $target ) {
+  print q{(classmate&rsquo;s essay not found&mdash;please contact the course staff)};
+} else {
+  my $get_target = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+  $get_target->execute( $target, $target_assignment ) or die qq{$DBI::errstr};
+
+  if ( my $data = $get_target->fetchrow_hashref ) {
+    my $text2 = $data->{ contents };
+    $text2 =~ s{[ \t\n]+/}{ }g;
+    my $wordcount = scalar (split / +/, $text2);
+    $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+
+    print qq{<div class="well trix-content">$data->{ contents }</div>};
+  } else {
+    print q{(classmate&rsquo;s essay not found&mdash;please contact the course staff)};
+  }
+}
+
+print q{</div>};
+
+print q{Please save your response often, and save your final version by Friday, February 17.<p><hr><p>};
+
+my $text = qq{};
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{snowdenresponse} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='snowdenresponse'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;
