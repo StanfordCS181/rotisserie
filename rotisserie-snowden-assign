@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+use POSIX;
+use List::Util qw[shuffle];
+
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2017} ) or die qq{$DBI::errstr};
+
+my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
+
+$all_last_versions->execute( q{snowden} ) or die qq{$DBI::errstr};
+
+my @entries;
+
+while ( my $data = $all_last_versions->fetchrow_hashref ) {
+  my $sunetid = $data->{ sunetid };
+  my $name = $data->{ name };
+  my $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+  $timestamp =~ s{AM}{a.m.}g;
+  $timestamp =~ s{PM}{p.m.}g;
+
+  my $text2 = $data->{ contents };
+  $text2 =~ s{[ \t\n]+/}{ }g;
+  my $wordcount = scalar (split / +/, $text2);
+  $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+
+  if ( $wordcount > 50 ) {
+    push @entries, { sunetid => $sunetid,
+		     name => $name,
+		     wordcount => $wordcount };
+  }
+}
+
+@entries = shuffle @entries;
+
+my $insertion = $dbh->prepare( q{INSERT INTO rotisserie (sunetid, responds_to, assignment) VALUES (?,?,?)} ) or die qq{$DBI::errstr};
+
+for ( my $i = 0; $i < @entries; $i++ ) {
+  $entries[ $i ]{ response } = $entries[ ($i + 1) % (@entries) ]{ sunetid };
+  print qq{$i: $entries[ $i ]{ sunetid } responds to $entries[ $i ]{ response }\n};
+  $insertion->execute( $entries[ $i ]{ sunetid },
+		       $entries[ $i ]{ response },
+		       q{snowden} ) or die qq{$DBI::errstr};
+}
