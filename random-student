@@ -59,11 +59,11 @@ sub limited_random {
 };
 
 while ( 1 ) {
-#  $random_sunetid->execute() or die qq{$DBI::errstr};
+  $random_sunetid->execute() or die qq{$DBI::errstr};
 
-#  my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
+  my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
 
-  my $sunetid = limited_random();
+#  my $sunetid = limited_random();
 
   $sunetid_to_name->execute( $sunetid ) or die qq{$DBI::errstr};
 
