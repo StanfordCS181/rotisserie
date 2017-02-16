@@ -11,6 +11,8 @@ print_header( q{Submissions to the Snowden assignment} );
 
 my $dbh = &database;
 
+my $assignment = q{snowden};
+
 my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
 
 if ( $class ne q{staff} ) {
@@ -20,7 +22,13 @@ if ( $class ne q{staff} ) {
 
 my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
 
-$all_last_versions->execute( q{snowden} ) or die qq{$DBI::errstr};
+$all_last_versions->execute( $assignment ) or die qq{$DBI::errstr};
+
+my $find_response_responder = $dbh->prepare( q{SELECT sunetid FROM rotisserie WHERE responds_to = ? AND assignment = ?} ) or die qq{$DBI::errstr};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+my $getname = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? ORDER BY timestamp DESC LIMIT 1} ) or die qq{$DBI::errstr};
 
 while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );
@@ -33,9 +41,34 @@ while ( my $data = $all_last_versions->fetchrow_hashref ) {
     $text2 =~ s{[ \t\n]+/}{ }g;
     my $wordcount = scalar (split / +/, $text2);
     $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
-    
+
     print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
-    print qq{<div class="well trix-content">$data->{ contents }</div><p><hr><p>};
+    print qq{<div class="well trix-content">$data->{ contents }</div>};
+
+    # get the responder
+    $find_response_responder->execute( $data->{ sunetid }, $assignment ) or die qq{$DBI::errstr};
+    if ( my $frr = $find_response_responder->fetchrow_hashref ) {
+      $lastversion->execute( $frr->{ sunetid }, $assignment . q{response} ) or die qq{$DBI::errstr};
+      if ( my $lv = $lastversion->fetchrow_hashref ) {
+	my $sunetid2 = HTML::Entities::encode_entities( $frr->{ sunetid } );
+	$getname->execute( $frr->{ sunetid } ) or die qq{$DBI::errstr};
+	my $name2 = q{unknown};
+	if ( my $n = $getname->fetchrow_hashref ) { $name2 = HTML::Entities::encode_entities( $n->{ name } ); }
+	HTML::Entities::encode_entities( $lv->{ name } );
+	my $timestamp2 = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $lv->{ timestamp } );
+	$timestamp2 =~ s{AM}{a.m.}g;
+	$timestamp2 =~ s{PM}{p.m.}g;
+
+	my $text3 = $lv->{ contents };
+	$text3 =~ s{[ \t\n]+/}{ }g;
+	my $wordcount2 = scalar (split / +/, $text3);
+	$wordcount2 = 10 * int( $wordcount2 / 10.0 + 0.5 );
+
+	print qq{<div class="col-xs-1"></div><div class="col-xs-11"><h5>Response by ${name2} <span class="text-muted">&lt;${sunetid2}&gt;, about $wordcount2 words</span></h5>};
+	print qq{<div class="well trix-content">$lv->{ contents }</div></div><br>};
+      }
+      print qq{<p><hr><p>};
+    }
 }
 
 &finish;
