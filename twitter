@@ -1,0 +1,124 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{What Should Twitter Do?} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name}.</h4><p>};
+
+print q{You have been hired as a consultant by Twitter, Inc. The
+company would like your advice on how to navigate the competing
+interests described in <a href="https://cs181.stanford.edu">the
+articles assigned for the Feb. 22 reading</a>: the well-being of
+Twitter's users, especially those who may be subject to harassment,
+the commercial interests of the company and its employees and
+shareholders, and a general interest in the promotion free expression,
+justice, and truth.<p>
+
+Your client has asked you for a 500-word technical memo on the
+subject: <b>What Should Twitter Do?</b> Make 2&ndash;4 clear and
+specific recommendations and support why Twitter should adopt
+them. Use persuasive evidence, and structure your memo with bolded
+subheadings for your major points. Include an executive summary at the
+beginning.<p>};
+
+print q{<div class="well">Examples of persuasive writing you may find helpful:
+<ul>
+<li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo shown in class</a>
+<li><a href="http://web.cs.ucdavis.edu/~rogaway/papers/moral.html">Rogaway&rsquo;s &ldquo;The Moral Character of Cryptographic Work&rdquo;</a>
+<li><a href="http://laurakipnis.com/wp-content/uploads/2010/08/My-Title-IX-Inquisition-The-Chronicle-Review-.pdf">Laura Kipnis&rsquo;s &ldquo;My Title IX Inquisition&rdquo;</a>
+<li><a href="https://medium.com/basic-income/self-driving-trucks-are-going-to-hit-us-like-a-human-driven-truck-b8507d9c5961">Argument in favor of a universal basic income</a>
+<li><a href="http://www.columbia.edu/~col8/lobsterarticle.pdf">David Foster Wallace&rsquo;s &ldquo;Consider the Lobster&rdquo;</a>
+<li><a href="http://www.utilitarian.net/singer/by/1972----.htm">Peter Singer&rsquo;s &ldquo;Famine, Affluence, and Morality&rdquo;</a>
+
+</ul></div><p>};
+
+print q{Please save your memo often, and save your final version before class on Wednesday, February 22. During Wednesday&rsquo;s class, we will randomly assign you another student&rsquo;s memo for you to respond by Friday, February 24.<p><hr><p>};
+
+my $text = qq{<b>From:</b> ${display_name}<br>
+<b>To:</b> Board of Directors, Twitter, Inc.<br>
+<b>Subject:</b> What Should Twitter Do?<br><p>};
+
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{twitter} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='twitter'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;
