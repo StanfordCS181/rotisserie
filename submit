@@ -22,7 +22,7 @@ if ( not defined $assignment ) {
 }
 die unless defined $assignment;
 #die unless $assignment eq q{therac} or $assignment eq q{trolley} or $assignment eq q{snowden};
-unless ( $assignment eq q{snowdenresponse} or $assignment eq q{twitter} ) {
+unless ( $assignment eq q{twitterresponse} ) {
   print qq{Content-type: text/plain\n\nUnfortunately, submissions for that assignment ($assignment) are no longer accepted.};
   exit;
 }
