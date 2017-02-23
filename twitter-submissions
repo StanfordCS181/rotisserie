@@ -42,8 +42,8 @@ while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $wordcount = scalar (split / +/, $text2);
     $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
 
-    print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
-    print qq{<div class="well trix-content">$data->{ contents }</div>};
+    print qq{<h4 id="essay-header">${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
+    print qq{<div class="well trix-content" id="essay">$data->{ contents }</div>};
 
     # get the responder
     $find_response_responder->execute( $data->{ sunetid }, $assignment ) or die qq{$DBI::errstr};
@@ -64,8 +64,8 @@ while ( my $data = $all_last_versions->fetchrow_hashref ) {
 	my $wordcount2 = scalar (split / +/, $text3);
 	$wordcount2 = 10 * int( $wordcount2 / 10.0 + 0.5 );
 
-	print qq{<div class="col-xs-1"></div><div class="col-xs-11"><h5>Response by ${name2} <span class="text-muted">&lt;${sunetid2}&gt;, about $wordcount2 words</span></h5>};
-	print qq{<div class="well trix-content">$lv->{ contents }</div></div><br>};
+	print qq{<div class="col-xs-1"></div><div class="col-xs-11"><h5 id="response-header">Response by ${name2} <span class="text-muted">&lt;${sunetid2}&gt;, about $wordcount2 words</span></h5>};
+	print qq{<div class="well trix-content" id="response">$lv->{ contents }</div></div><br>};
       }
       print qq{<p><hr><p>};
     }
