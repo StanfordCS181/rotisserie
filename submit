@@ -16,6 +16,10 @@ my $cgi = CGI->new;
 die unless defined $sunetid;
 
 my $assignment = $cgi->param( q{assignment} );
+if ( not defined $assignment ) {
+  print qq{Content-type: text/plain\n\nUnfortunately, your browser did not send an assignment parameter. Please go back and submit again.};
+  exit;
+}
 die unless defined $assignment;
 #die unless $assignment eq q{therac} or $assignment eq q{trolley} or $assignment eq q{snowden};
 unless ( $assignment eq q{snowdenresponse} or $assignment eq q{twitter} ) {
