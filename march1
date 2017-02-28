@@ -15,7 +15,7 @@ my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
 
 print qq{<h4>Welcome, ${first_name}.</h4><p>};
 
-print q{In your view, which essay (Stallman or Lewis) speaks more to the concerns of today? Why? Please save often, and save your final version by Monday, March 6. (We think we have fixed all of the bugs relating to
+print q{In your view, which essay (Stallman or Lewis) speaks more to the concerns of today? Why?<br><p> Please save often, and save your final version before class on Wednesday, March 1. (We think we have fixed all of the bugs relating to
 early logout, but please let us know if you have trouble.)<p>};
 
 my $text = qq{};
