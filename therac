@@ -13,7 +13,7 @@ my $dbh = &database;
 
 my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
 
-print qq{<h4>Welcome, ${first_name}.</h4><p>};
+print qq{<h4>Welcome, ${first_name} (${class}).</h4><p>};
 
 print q{To prepare for the first week of class, please read the paper <a href="http://sunnyday.mit.edu/papers/therac.pdf">Medical Devices: the Therac-25</a> (1995), by Nancy Leveson. We suggest reading the paper in multiple passes, to get the outline and larger points before diving in to the details. Start with a quick scan by reading the introduction, the bolded headings, and all of the figures. Scan the last section (&ldquo;Causal Factors&rdquo;). Get an idea of the larger structure and message of the paper. Then, read the paper fully from the beginning. Take notes as you read. What do you find surprising? Are there statements you disagree with? What larger points is the author trying to make?<p>};
 
@@ -40,7 +40,7 @@ Please:
 <ul>
 <li>Write your memo below, and submit by noon on January 10, 2018.</li>
 <li>Respect the requested word-count (plus or minus 5%).</li>
-<li>Write your response in the style of a readable business memo, following this <a href="example-memo-format.pdf">example of the format</a>.</li>
+<li>Write your response in the style of a readable business memo. You may use this <a href="example-memo-format.pdf">example of the format</a> as a reference.</li>
 </ul>
 <p><hr><p>
 END
