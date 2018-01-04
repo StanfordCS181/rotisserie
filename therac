@@ -27,7 +27,7 @@ print qq{<div class="well">
 We are aware of a series of tragic incidents related to the Therac 25 linac, and curious what implications this case study may have for our own medical-device business. Please prepare a 400-word technical memo for our engineering and management staff on the following topics.<p>
 
 <ol type="a">
-<li>What should our staff know about the Therac 25 and these incidents?
+<li>As an executive summary, what are the most important points for our staff to know about the Therac 25 incidents?
 
 <li>What is one engineering recommendation you would make to our technical staff, as a result of these incidents? <span class="text-muted">Support this recommendation with persuasive evidence.</span>
 
@@ -40,7 +40,7 @@ Please:
 <ul>
 <li>Write your memo below, and submit by noon on January 10, 2018.</li>
 <li>Respect the requested word-count (plus or minus 5%).</li>
-<li>Write your response in the style of a readable business memo. You may use this <a href="example-memo-format.pdf">example of the format</a> as a reference.</li>
+<li>Write your response in the style of a readable, concise memo. You may use this <a href="example-memo-format.pdf">example of the format</a>, written by one of your CAs, as a reference.</li>
 </ul>
 <p><hr><p>
 END
