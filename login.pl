@@ -24,7 +24,7 @@ sub finish {
 }
 
 sub database {
-  my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2017} ) or die qq{$DBI::errstr};
+  my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2018} ) or die qq{$DBI::errstr};
   return $dbh;
 }
 

@@ -7,7 +7,7 @@ use List::Util qw[shuffle];
 
 my $orig_assignment = q{twitter};
 
-my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2017} ) or die qq{$DBI::errstr};
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2018} ) or die qq{$DBI::errstr};
 
 my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
 
