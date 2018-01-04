@@ -38,9 +38,10 @@ We are aware of a series of tragic incidents related to the Therac 25 linac, and
 print <<"END";
 Please:
 <ul>
-<li>Write your memo below, and submit by noon on January 10, 2018.</li>
-<li>Respect the requested word-count (plus or minus 5%).</li>
-<li>Write your response in the style of a readable, concise memo. You may use this <a href="example-memo-format.pdf">example of the format</a>, written by one of your CAs, as a reference.</li>
+<li>Write your response in the form below in the style of a readable, concise memo. You may use this <a href="example-memo-format.pdf">example of the format</a>, written by one of your CAs, as a reference.</li>
+<li>Respect the requested word count (plus or minus 5%).</li>
+<li>Save your work early and often, by using the &ldquo;Save&rdquo; button.</li>
+<li>Finish by noon on January 10, 2018.</li>
 </ul>
 <p><hr><p>
 END
