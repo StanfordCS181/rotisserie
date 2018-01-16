@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{Students enrolled in CS181/181W} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+if ( $class ne q{staff} ) {
+  print qq{<h4>This page is limited to CS181/181W staff.</h4>};
+  &finish;
+}
+
+my $students = $dbh->prepare( q{SELECT DISTINCT ON (users.sunetid) users.sunetid, class, hits.name FROM users, hits WHERE users.sunetid=hits.sunetid ORDER BY sunetid ASC} ) or die qq{$DBI::errstr};
+
+$students->execute() or die qq{$DBI::errstr};
+
+my $counter = 1;
+while ( my $data = $students->fetchrow_hashref ) {
+    my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );
+    my $name = HTML::Entities::encode_entities( $data->{ name } );
+    my $class = HTML::Entities::encode_entities( $data->{ class } );
+
+    next if ( $class eq q{staff} or $class =~ m{^old} );
+    
+    print qq{<h4><span class="text-muted">${counter})</span> ${name} <span class="text-muted">&lt;${sunetid}&gt; (${class})</span></h4><p>};
+    $counter++;
+}
+
+&finish;
