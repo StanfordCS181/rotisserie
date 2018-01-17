@@ -50,7 +50,7 @@ if ( $class ne q{staff} ) {
 my $sunetid = "";
 my $name = "";
 
-my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
+my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' AND class NOT LIKE '%old%' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
 my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
 
 sub limited_random {

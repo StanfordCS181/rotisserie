@@ -22,6 +22,7 @@ my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) wr
 
 $all_last_versions->execute( q{trolley} ) or die qq{$DBI::errstr};
 
+my $counter = 1;
 while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );
     my $name = HTML::Entities::encode_entities( $data->{ name } );
@@ -35,8 +36,9 @@ while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $wordcount = scalar (split / +/, $text2);
     $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
     
-    print qq{<h4>${name} <span class="text-muted">&lt;${sunetid}&gt; (${class}), about $wordcount words</span></h4>};
+    print qq{<h4><span class="text-muted">${counter})</span> ${name} <span class="text-muted">&lt;${sunetid}&gt; (${class}), about $wordcount words</span></h4>};
     print qq{<div class="well trix-content">$data->{ contents }</div><p><hr><p>};
+    $counter++;
 }
 
 &finish;
