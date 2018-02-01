@@ -23,7 +23,7 @@ Use persuasive evidence (citing to news reports and to documents Snowden release
 
 print q{<div class="well">Examples of persuasive writing you may find helpful:
 <ul>
-<li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo shown in class</a>
+<li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo at Stanford</a>
 <li><a href="http://web.cs.ucdavis.edu/~rogaway/papers/moral.html">Rogaway&rsquo;s &ldquo;The Moral Character of Cryptographic Work&rdquo;</a>
 <li><a href="http://laurakipnis.com/wp-content/uploads/2010/08/My-Title-IX-Inquisition-The-Chronicle-Review-.pdf">Laura Kipnis&rsquo;s &ldquo;My Title IX Inquisition&rdquo;</a>
 <li><a href="https://medium.com/basic-income/self-driving-trucks-are-going-to-hit-us-like-a-human-driven-truck-b8507d9c5961">Argument in favor of a universal basic income</a>
@@ -32,7 +32,10 @@ print q{<div class="well">Examples of persuasive writing you may find helpful:
 
 </ul></div><p>};
 
-print q{Please save your memo often, and save your final version before class on Wednesday, February 8.<p><hr><p>};
+print q{Please save your memo often, and save your final version
+before class on Wednesday, February 7. After the assignments are
+posted, we will open the page of essays to all students and will ask
+you to reply to another (randomly chosen) student's essay.<p><hr><p>};
 
 my $text = qq{<b>Coin came up:</b> [please fill in heads or tails]<p>};
 my $timestamp = q{never};
