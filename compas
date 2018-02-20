@@ -21,7 +21,7 @@ print q{<p>Should an algorithm like COMPAS be used for sentencing or bail decisi
 
 <p>Please make a persuasive argument in the form of a 600-word argument <b>for</b> or <b>against</b> the use of algorithms like COMPAS in the U.S. justice system, for example in sentencing and bail decisions. Imagine that your essay will be read by the judges on the California Supreme Court, on whether to allow the use of such algorithms by courts in the State of California. You may freely choose your position on this topic.</p>
 
-<p>Please use persuasive evidence (including citations), structure your essay using typographical emphasis and whitespace, and make sure to state your thesis and include an exective summary of your argument at the beginning.</p>};
+<p>Please use persuasive evidence (including citations), structure your essay using typographical emphasis and whitespace, and make sure to state your thesis and include an executive summary of your argument at the beginning.</p>};
 
 print q{<div class="well">Examples of persuasive writing you may find helpful:
 <ul>
