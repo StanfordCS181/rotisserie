@@ -1,0 +1,116 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{Algorithmic sentencing and bail} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name}.</h4><p>};
+
+print q{<p>Should an algorithm like COMPAS be used for sentencing or bail decisions in the US justice system, or should these decisions be left to human judges?</p>
+
+<p>As we have heard from class discussion and readings, algorithms are increasingly being integrated into the U.S. justice system. In particular, as we read in the <a href="https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing">ProPublica Machine Bias reading</a>, the use of the COMPAS risk scoring algorithm has generated significant controversy. Choosing and satisfying fairness criteria, however, is a complicated process that can include subjective decision-making (for a recap of Emma Pierson&rsquo;s lecture presentation, see this <a href="https://www.washingtonpost.com/news/monkey-cage/wp/2016/10/17/can-an-algorithm-be-racist-our-analysis-is-more-cautious-than-propublicas/">Washington Post op-ed</a> by Emma and some of her collaborators).</p>
+
+<p>Please make a persuasive argument in the form of a 600-word argument <b>for</b> or <b>against</b> the use of algorithms like COMPAS in the U.S. justice system, for example in sentencing and bail decisions. Imagine that your essay will be read by the judges on the California Supreme Court, on whether to allow the use of such algorithms by courts in the State of California. You may freely choose your position on this topic.</p>
+
+<p>Please use persuasive evidence (including citations), structure your essay using typographical emphasis and whitespace, and make sure to state your thesis and include an exective summary of your argument at the beginning.</p>};
+
+print q{<div class="well">Examples of persuasive writing you may find helpful:
+<ul>
+<li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo shown in class</a>
+<li><a href="http://web.cs.ucdavis.edu/~rogaway/papers/moral.html">Rogaway&rsquo;s &ldquo;The Moral Character of Cryptographic Work&rdquo;</a>
+<li><a href="http://laurakipnis.com/wp-content/uploads/2010/08/My-Title-IX-Inquisition-The-Chronicle-Review-.pdf">Laura Kipnis&rsquo;s &ldquo;My Title IX Inquisition&rdquo;</a>
+<li><a href="https://medium.com/basic-income/self-driving-trucks-are-going-to-hit-us-like-a-human-driven-truck-b8507d9c5961">Argument in favor of a universal basic income</a>
+<li><a href="http://www.columbia.edu/~col8/lobsterarticle.pdf">David Foster Wallace&rsquo;s &ldquo;Consider the Lobster&rdquo;</a>
+<li><a href="http://www.utilitarian.net/singer/by/1972----.htm">Peter Singer&rsquo;s &ldquo;Famine, Affluence, and Morality&rdquo;</a>
+
+</ul></div><p>};
+
+print q{Please save your memo often, and save your final version before class on Monday, February 26. During Monday&rsquo;s class, we will randomly assign you another student&rsquo;s memo for you to respond by Wednesday, February 28.<p><hr><p>};
+
+my $text = qq{<b>From:</b> ${display_name}<br>
+<b>To:</b> Supreme Court of California<br>
+    <b>Subject:</b> Report of Stanford University expert on the use of algorithms like COMPAS in sentencing and bail decisions in the State of California<br><p>};
+
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{compas} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='compas'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;
