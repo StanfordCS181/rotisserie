@@ -15,7 +15,7 @@ my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
 
 print qq{<h4>Welcome, ${first_name}.</h4><p>};
 
-print q{Please submit your revised essay below.<p>};
+print q{Please submit your revised essay below before class on March 12.<p>};
 
 my $text = qq{<b>Essay being revised:</b> [Therac, Snowden, etc.]<br><p>};
 
