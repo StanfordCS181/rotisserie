@@ -21,8 +21,8 @@ if ( not defined $assignment ) {
   exit;
 }
 die unless defined $assignment;
-#die unless $assignment eq q{therac} or $assignment eq q{trolley} or $assignment eq q{snowden};
-unless ( $assignment eq q{revision} or $assignment eq q{compas} ) {
+
+unless ( $assignment eq q{revision} or $assignment eq q{compasresponse} ) {
   print qq{Content-type: text/plain\n\nUnfortunately, submissions for that assignment ($assignment) are no longer accepted.};
   exit;
 }
