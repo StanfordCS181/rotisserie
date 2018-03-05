@@ -48,7 +48,7 @@ if ( not defined $target ) {
 
 print q{</div>};
 
-print q{Please save your response often, and save your final version before class on Monday, February 12.<p><hr><p>};
+print q{Please save your response often, and save your final version before class on Monday, March 5.<p><hr><p>};
 
 my $text = qq{};
 my $timestamp = q{never};
