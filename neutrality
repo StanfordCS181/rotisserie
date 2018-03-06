@@ -1,0 +1,113 @@
+#!/usr/bin/perl -w
+
+use strict;
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{Net neutrality} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name}.</h4><p>};
+
+print q{You have been invited to submit a public comment to the Federal Communications Commission over their recent repeal of net-neutrality rules. In 400 words or less, please outline your two strongest arguments <b>for</b> or <b>against</b> net-neutrality rules, focused on the United States, and explain why the opposing viewpoint&rquo;s strongest argument should not convince the FCC.
+
+The FCC&rsquo;s public comment system does not require comments to be formatted as memos, but you should assume that your readers (FCC Commissioners) are familiar with the issues and background of net neutrality, and do not need a summary. As discussed in class, focus on your most convincing arguments, and limit the arguments you propose to at most three. In crafting and selecting your arguments, you may wish to consider the goals of the FCC and the types of argumentation most likely to convince the Commissioners.
+
+(For more background on net neutrality, please see the readings for Monday&rsquo;s lecture, and the following optional sources:
+
+<ul>
+<li>Wired guide to net neutrality: <a href="https://www.wired.com/story/guide-net-neutrality/">https://www.wired.com/story/guide-net-neutrality/</a>
+
+<li>CNET guide to net neutrality (2015): <a href="https://www.cnet.com/news/13-things-you-need-to-know-about-the-fccs-net-neutrality-regulation/">https://www.cnet.com/news/13-things-you-need-to-know-about-the-fccs-net-neutrality-regulation/</a>
+
+<li>CNET guide to net neutrality repeal (2017): <a href="https://www.cnet.com/news/fcc-net-neutrality-repeal-ajit-pai-what-you-need-to-know/">https://www.cnet.com/news/fcc-net-neutrality-repeal-ajit-pai-what-you-need-to-know/</a>
+</ul>
+
+<p>Please use persuasive evidence (including citations), structure your essay using typographical emphasis and whitespace, and make sure to state your thesis at the beginning.</p>};
+
+print q{Please save your memo often, and save your final version before class on Monday, March 12.<p><hr><p>};
+
+my $text = qq{<b>From:</b> ${display_name}<br>
+<b>To:</b> Federal Communications Commission<br>
+    <b>Subject:</b> Public comment (for) (against) net-neutrality rules<br><p>};
+
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{neutrality} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='neutrality'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;
