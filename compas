@@ -11,6 +11,8 @@ print_header( q{Algorithmic sentencing and bail} );
 
 my $dbh = &database;
 
+my $assignment = q{compas};
+
 my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
 
 print qq{<h4>Welcome, ${first_name}.</h4><p>};
@@ -44,7 +46,7 @@ my $timestamp = q{never};
 
 my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
 
-$lastversion->execute( $sunetid, q{compas} ) or die qq{$DBI::errstr};
+$lastversion->execute( $sunetid, $assignment ) or die qq{$DBI::errstr};
 
 if ( my $data = $lastversion->fetchrow_hashref ) {
     $text = HTML::Entities::encode_entities( $data->{ contents } );
@@ -107,10 +109,39 @@ window.addEventListener("beforeunload", function( event ) {
 <form action='/submit' method='post' onsubmit="reset_orig_text()">
 <input id='default' type='hidden' name='content' value='${text}'>
 <trix-editor id='trix-editor' input='default'></trix-editor>
-<input name='assignment' type='hidden' value='compas'><br>
+<input name='assignment' type='hidden' value='${assignment}'><br>
 <div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
 <div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
 </form>
 END
+
+# get the responder
+my $find_response_responder = $dbh->prepare( q{SELECT sunetid FROM rotisserie WHERE responds_to = ? AND assignment = ?} ) or die q {$DBI::errstr};
+
+my $getname = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? ORDER BY timestamp DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$find_response_responder->execute( $sunetid, $assignment ) or die qq{$DBI::errstr};
+if ( my $frr = $find_response_responder->fetchrow_hashref ) {
+    $lastversion->execute( $frr->{ sunetid }, $assignment . q{response} ) or die qq{$DBI::errstr};
+    if ( my $lv = $lastversion->fetchrow_hashref ) {
+        my $sunetid2 = HTML::Entities::encode_entities( $frr->{ sunetid } );
+        $getname->execute( $frr->{ sunetid } ) or die qq{$DBI::errstr};
+        my $name2 = q{unknown};
+        if ( my $n = $getname->fetchrow_hashref ) { $name2 = HTML::Entities::encode_entities( $n->{ name } ); }
+        HTML::Entities::encode_entities( $lv->{ name } );
+        my $timestamp2 = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $lv->{ timestamp } );
+        $timestamp2 =~ s{AM}{a.m.}g;
+        $timestamp2 =~ s{PM}{p.m.}g;
+
+        my $text3 = $lv->{ contents };
+        $text3 =~ s{[ \t\n]+/}{ }g;
+        my $wordcount2 = scalar (split / +/, $text3);
+        $wordcount2 = 10 * int( $wordcount2 / 10.0 + 0.5 );
+
+        print qq{<div class="col-xs-12"><p><hr><p></div><div class="col-xs-1"></div><div class="col-xs-11"><h5 id="response-header">Response by ${name2} <span class="text-muted">&lt;${sunetid2}&gt;, about $wordcount2 words</span></h5>};
+        print qq{<div class="well trix-content" id="response">$lv->{ contents }</div></div><br>};
+    }
+    print qq{<p><hr><p>};
+}
 
 &finish;
