@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
 require q{login.pl};
 use HTML::Entities;
 use POSIX;

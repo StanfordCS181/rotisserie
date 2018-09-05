@@ -5,6 +5,7 @@ use CGI;
 use HTML::Scrubber;
 use utf8;
 
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
 require q{login.pl};
 
 my $dbh = &database;
@@ -22,7 +23,7 @@ if ( not defined $assignment ) {
 }
 die unless defined $assignment;
 
-unless ( $assignment eq q{revision} or $assignment eq q{neutrality} ) {
+unless ( $assignment eq q{therac} ) {
   print qq{Content-type: text/plain\n\nUnfortunately, submissions for that assignment ($assignment) are no longer accepted.};
   exit;
 }

@@ -28,8 +28,12 @@ sub database {
   return $dbh;
 }
 
-sub login ($) {
-  my ( $dbh ) = @_;
+sub login {
+  my ( $dbh, $add_to_class ) = @_;
+
+  if ( not defined $add_to_class ) {
+    $add_to_class = 0;
+  }
 
   # get sunetid
   my $sunetid = $ENV{ uid };
@@ -64,6 +68,7 @@ sub login ($) {
   my $first_name = safer_retrieve( q{givenName}, 1 );
 
   my $isinclass = $dbh->prepare( 'SELECT class FROM users WHERE sunetid = ?' ) or die qq{$DBI::errstr};
+  my $addtoclass = $dbh->prepare( q{INSERT INTO users ( sunetid, class, conflict ) VALUES ( ?, ?, ? )} ) or die qq{$DBI::errstr};
 
   $isinclass->execute( $sunetid ) or die qq{$DBI::errstr};
 
@@ -76,9 +81,14 @@ sub login ($) {
 
   $hit->execute( $sunetid, $ENV{ q{REQUEST_URI} }, $display_name, $first_name, $ENV{ q{REMOTE_ADDR} } ) or die qq{$DBI::errstr};
 
-  if ( not defined $class or $class =~ m{^old} ) {
-    print qq{<h4>Unfortunately, we do not have a record that $display_name is currently enrolled in CS181 or CS181W. Please contact the course staff if you believe this is in error.</h4>};
-    finish;
+  if ( not defined $class ) {
+    if ( $add_to_class ) {
+      $addtoclass->execute( $sunetid, q{waitlist}, 0 );
+      $class = q{waitlist};
+    } else {
+      print qq{<h4>Unfortunately, we do not have a record that $display_name is currently enrolled in CS181 or CS181W. Please contact the course staff if you believe this is in error.</h4>};
+      finish;
+    }
   }
 
   return ( $sunetid, $display_name, $first_name, $class );
