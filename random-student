@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
 require q{login.pl};
 use HTML::Entities;
 use POSIX;
@@ -47,7 +48,7 @@ if ( $class ne q{staff} ) {
   &finish;
 }
 
-my $sunetid = "";
+$sunetid = "";
 my $name = "";
 
 my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != 'staff' AND class NOT LIKE '%old%' ORDER BY random() LIMIT 1} ) or die qq{$DBI::errstr};
