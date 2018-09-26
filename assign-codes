@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_fall2018} ) or die qq{$DBI::errstr};
+
+my $list_181w = $dbh->prepare( q{SELECT sunetid FROM users WHERE class = 'CS181W'} ) or die qq{$DBI::errstr};
+
+my $assign_code = $dbh->prepare( q{INSERT INTO codes (sunetid, code) VALUES (?,?)} ) or die qq{$DBI::errstr};
+
+$list_181w->execute() or die qq{$DBI::errstr};
+
+my @students;
+
+while ( my $data = $list_181w->fetchrow_hashref ) {
+  push @students, $data->{ sunetid };
+}
+
+my @codes;
+while ( my $code = <> ) {
+  chomp $code;
+  push @codes, $code;
+}
+
+if ( scalar @codes < scalar @students ) {
+  die "Not enough codes\n";
+}
+
+for ( my $i = 0; $i <= $#students; $i++ ) {
+  $assign_code->execute( $students[ $i ], $codes[ $i ] ) or die qq{$DBI::errstr};
+}
