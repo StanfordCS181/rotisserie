@@ -72,6 +72,11 @@ printf qq{Total students entering: } . scalar @entries . qq{\n};
 printf qq{\n===\n\n};
 
 # Figure out prize amount
+if ( $total < 1 ) {
+  print qq{No entries!\n};
+  exit;
+}
+
 my $prize_value = 500 / $total;
 printf qq{Prize amount: \$%.02f\n}, $prize_value;
 
