@@ -49,9 +49,9 @@ sub printout ($) {
 
 ENTRY: while ( my $data = $all_last_versions->fetchrow_hashref ) {
   my ( $name ) = HTML::Entities::decode_entities( $data->{ name } );
-  my ( $num ) = $data->{ contents } =~ m{Number of entries I am submitting:.*?(\d+)}s;
+  my ( $num ) = $data->{ contents } =~ m{Number of entries I am submitting:.*?(\d+).*?<br>}s;
   unless ( defined $num ) {
-    print STDERR qq{Warning: ignoring invalid entry from $data->{ sunetid }\n};
+    print qq{\e[97;41mWarning:\e[m ignoring invalid entry from $data->{ sunetid }\n};
     next ENTRY;
   }
 
