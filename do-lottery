@@ -1,0 +1,91 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+use bignum;
+use HTML::Entities;
+use Lingua::EN::Inflect;
+require q[./Subscript.pm];
+
+binmode( STDOUT, q{:utf8} );
+
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_fall2018} ) or die qq{$DBI::errstr};
+
+my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
+$all_last_versions->execute( q{lottery} ) or die qq{$DBI::errstr};
+
+my @entries;
+my $total = 0;
+
+sub uncolorify {
+  print qq{\e[m};
+}
+
+sub colorify ($) {
+  my ( $num ) = shift;
+  if ( $num == 0 ) { # green
+    print qq{\e[30;42m};
+  } elsif ( $num == 1 ) { # blue
+    print qq{\e[97;44m};
+  } elsif ( $num > 10 ) { # magenta
+    print qq{\e[97;45m};
+  }
+}
+
+sub commify {
+   my $text = reverse $_[0];
+   $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+   return scalar reverse $text;
+}
+
+sub printout ($) {
+  my ( $n ) = shift;
+  if ( $n < 10000000 ) {
+    commify( $n ) . q{ } . Lingua::EN::Inflect::PL( q{entry}, $n );
+  } else {
+    q{about 10^} . Unicode::Subscript::superscript( int( log( $n ) / log( 10 ) ) ) . q{ entries};
+  }
+}
+
+ENTRY: while ( my $data = $all_last_versions->fetchrow_hashref ) {
+  my ( $name ) = HTML::Entities::decode_entities( $data->{ name } );
+  my ( $num ) = $data->{ contents } =~ m{Number of entries I am submitting:.*?(\d+)}s;
+  unless ( defined $num ) {
+    print STDERR qq{Warning: ignoring invalid entry from $data->{ sunetid }\n};
+    next ENTRY;
+  }
+
+  $num += 0;
+  $total += $num;
+  push @entries, { entries => $num, sunetid => $data->{ sunetid } };
+
+  colorify( $num );
+  print qq{$name submitted } . printout( $num ) . qq{.\e[K};
+  uncolorify;
+  print qq{\n};
+}
+
+# Print total number of entries
+printf qq{\n===\n\nTotal entries: } . printout( $total ) . qq{\n};
+printf qq{Total students entering: } . scalar @entries . qq{\n};
+
+printf qq{\n===\n\n};
+
+# Figure out prize amount
+my $prize_value = 500 / $total;
+printf qq{Prize amount: \$%.02f\n}, $prize_value;
+
+# award the prize
+if ( $prize_value > 0.001 ) { # prize must be at least a tenth of a penny
+  my $pick = $total * rand;
+  for ( @entries ) {
+    $pick -= $_->{ entries };
+    if ( $pick < 0 ) {
+      print qq{Winner: $_->{ sunetid }\n};
+      exit;
+    }
+  }
+} else {
+  print qq{\e[97;41mNo prize to award. :-(\e[K\e[m\n};
+}
+

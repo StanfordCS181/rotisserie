@@ -17,17 +17,20 @@ my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 1 );
 print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
 
 print q{Based on the Hofstadter reading, we will be holding a Luring
-Lottery in class on October 3, giving away up to $100 of
-Prof. Winstein&rsquo;s personal money. The prize will be $100/N, where
+Lottery in class on October 3, giving away up to $500 of
+Prof. Winstein&rsquo;s personal money. The prize will be $500/N, where
 N is the total number of entries submitted. The prize will be awarded to a single entry chosen
-uniformly at random among the submissions. Just as in the Hofstadter
-column, you can submit any non-negative integer number of entries for
-yourself. Please do not discuss your decision-making with anybody else. Please
-specify the number of entries you are submitting, and explain why (in
-about <b>150 words</b>), referencing the arguments made in the
-reading.<p><hr><p>};
+uniformly at random among all entries. Just as in the Hofstadter
+column, you may submit any (non-negative integral) number of entries for
+yourself. The more entries you submit, the greater your chance of winning. You may not discuss this assignment with anybody else.
 
-my $text = qq{<b>Official CS181/CS181W Luring Lottery Entry</b><br><b>From:</b> ${display_name}<br><b>Number of entries:</b> [number goes here]<br><br>[memo goes here]};
+<p> Below, please specify the number of entries you are submitting,
+and persuasively justify this decision (in about <b>150 words</b>),
+referencing the arguments made in the reading. Please save
+early and often, and save your final answer before noon
+on Wednesday, October 3.<p><hr><p>};
+
+my $text = qq{<b>Official CS181/CS181W Luring Lottery Entry</b><br><b>From:</b> ${display_name}<br><b>Number of entries I am submitting:</b> [number goes here]<br><br>[memo goes here]};
 my $timestamp = q{never};
 
 my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
