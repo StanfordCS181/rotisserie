@@ -34,7 +34,9 @@ large may be too dangerous for the streets. Your CEO has asked your team
 to reevaluate the framework in which your autonomous car makes emergency
 decisions.
 
-<b>Now: Please flip a coin once (please really do this).</b>
+<p>
+
+<b>Now:</b> Please flip a coin once (please really do this).
 
 <ul>
 
@@ -60,6 +62,7 @@ END
 print q{<div class="well">Here are some examples of persuasive writing you may find helpful and may choose to emulate:
 <ul>
 <li><a href="https://cs181.keithw.org/yoyodyne.pdf">Example persuasive memo at Stanford</a>
+<li><a href="https://cs181.keithw.org/example-memo-format.pdf">Past student work in CS181</a>
 <li><a href="http://web.cs.ucdavis.edu/~rogaway/papers/moral.html">Rogaway&rsquo;s &ldquo;The Moral Character of Cryptographic Work&rdquo;</a>
 <li><a href="http://laurakipnis.com/wp-content/uploads/2010/08/My-Title-IX-Inquisition-The-Chronicle-Review-.pdf">Laura Kipnis&rsquo;s &ldquo;My Title IX Inquisition&rdquo;</a>
 <li><a href="http://www.columbia.edu/~col8/lobsterarticle.pdf">David Foster Wallace&rsquo;s &ldquo;Consider the Lobster&rdquo;</a>
@@ -67,11 +70,11 @@ print q{<div class="well">Here are some examples of persuasive writing you may f
 
 </ul></div><p>};
 
-print q{Please save your memo before noon on Thursday, October 11.<p><hr><p>};
+print q{Please save your memo for the final time before noon on Friday, October 12.<p><hr><p>};
 
 my $text = qq{<b>Coin came up:</b> [please fill in heads or tails]<p>};
 
-my $text = qq{<b>From:</b> ${display_name}<br><b>To: CEO</b><b>Subject: </b><br>br>};
+my $text = qq{<b>From:</b> ${display_name}<br><b>To:</b> BJ Patrick, chief executive officer, safecars.ai<br><b>Subject: </b><br><br>};
 my $timestamp = q{never};
 
 my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
