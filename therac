@@ -12,7 +12,7 @@ print_header( q{First-day writing assignment (Therac 25)} );
 
 my $dbh = &database;
 
-my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 1 );
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 0 );
 
 print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
 
