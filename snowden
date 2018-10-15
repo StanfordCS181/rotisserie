@@ -1,13 +1,14 @@
 #!/usr/bin/perl -w
 
 use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
 require q{login.pl};
 use HTML::Entities;
 use POSIX;
 
 print qq{Content-type: text/html\n\n};
 
-print_header( q{Edward Snowden and Society} );
+print_header( q{Edward Snowden and the Evidence (400 words)} );
 
 my $dbh = &database;
 
