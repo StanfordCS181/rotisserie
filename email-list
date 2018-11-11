@@ -19,7 +19,7 @@ if ( $class ne q{staff} ) {
   &finish;
 }
 
-my $students = $dbh->prepare( q{SELECT DISTINCT ON (users.sunetid) users.sunetid, class, hits.name FROM users, hits WHERE users.sunetid=hits.sunetid ORDER BY sunetid ASC} ) or die qq{$DBI::errstr};
+my $students = $dbh->prepare( q{SELECT DISTINCT ON (users.sunetid) users.sunetid, class, hits.name FROM users, hits WHERE users.sunetid=hits.sunetid AND class='CS181' OR class='CS181W' ORDER BY sunetid ASC} ) or die qq{$DBI::errstr};
 
 $students->execute() or die qq{$DBI::errstr};
 

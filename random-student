@@ -55,7 +55,7 @@ my $random_sunetid = $dbh->prepare( q{SELECT sunetid FROM users WHERE class != '
 my $sunetid_to_name = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? LIMIT 1} ) or die qq{$DBI::errstr};
 
 sub limited_random {
-  my @nontalkers = qw[adyuen amoturu aabrown yuex cgoetze cholding csmith95 djp42 evanliu framos1 hrblun jaymoon jchen623 jshom jcamach2 jadamson kenxu95 lallis0n fvera mdenton dworskym mvt2412 mlam4 myang nms2017 nicolasn nmakow pabloh2 rwang7 reglong svansick sidhanth sydli trijeetm whuang6];
+  my @nontalkers = qw[nolanh costberg katlamb jlyons61 mli6 thawsitt coxiao ssklar2 schmitzm jainr icinquin fleecy awonglem hgui bbrandonᐧaileen15 awonkim amhwang dleeheid enehoran lfu2 mlin wkautz clomeli azhang97 norttung  pjmogan rcole34 ssafwan];
   return $nontalkers[rand @nontalkers];
 };
 
@@ -64,7 +64,7 @@ while ( 1 ) {
 
   my $sunetid = $random_sunetid->fetchrow_hashref->{ sunetid };
 
-#  my $sunetid = limited_random();
+  my $sunetid = limited_random();
 
   $sunetid_to_name->execute( $sunetid ) or die qq{$DBI::errstr};
 

@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
 require q{login.pl};
 use HTML::Entities;
 use POSIX;
@@ -21,7 +22,7 @@ print q{<p>Should an algorithm like COMPAS be used for sentencing or bail decisi
 
 <p>As we have heard from class discussion and readings, algorithms are increasingly being integrated into the U.S. justice system. In particular, as we read in the <a href="https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing">ProPublica Machine Bias reading</a>, the use of the COMPAS risk scoring algorithm has generated significant controversy. Choosing and satisfying fairness criteria, however, is a complicated process that can include subjective decision-making (for a recap of Emma Pierson&rsquo;s lecture presentation, see this <a href="https://www.washingtonpost.com/news/monkey-cage/wp/2016/10/17/can-an-algorithm-be-racist-our-analysis-is-more-cautious-than-propublicas/">Washington Post op-ed</a> by Emma and some of her collaborators).</p>
 
-<p>Please make a persuasive argument in the form of a 600-word argument <b>for</b> or <b>against</b> the use of algorithms like COMPAS in the U.S. justice system, for example in sentencing and bail decisions. Imagine that your essay will be read by the judges on the California Supreme Court, on whether to allow the use of such algorithms by courts in the State of California. You may freely choose your position on this topic.</p>
+<p>Please make a persuasive argument in the form of a 400-word argument <b>for</b> or <b>against</b> the use of algorithms like COMPAS in the U.S. justice system, for example in sentencing and bail decisions. Imagine that your essay will be read by the judges on the California Supreme Court, on whether to allow the use of such algorithms by courts in the State of California. You may freely choose your position on this topic.</p>
 
 <p>Please use persuasive evidence (including citations), structure your essay using typographical emphasis and whitespace, and make sure to state your thesis and include an executive summary of your argument at the beginning.</p>};
 
@@ -36,7 +37,7 @@ print q{<div class="well">Examples of persuasive writing you may find helpful:
 
 </ul></div><p>};
 
-print q{Please save your memo often, and save your final version before class on Monday, February 26. During Monday&rsquo;s class, we will randomly assign you another student&rsquo;s memo for you to respond by Wednesday, February 28.<p><hr><p>};
+print q{Please save your memo often, and save your final version before class on Wednesday, November 15.<p><hr><p>};
 
 my $text = qq{<b>From:</b> ${display_name}<br>
 <b>To:</b> Supreme Court of California<br>
