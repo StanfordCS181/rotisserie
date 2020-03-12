@@ -8,7 +8,7 @@ use POSIX;
 
 print qq{Content-type: text/html\n\n};
 
-print_header( q{Submissions to first-day writing assignment (Therac 25)} );
+print_header( q{Submissions to first-day writing assignment (Day 1)} );
 
 my $dbh = &database;
 
@@ -21,7 +21,7 @@ if ( $class ne q{staff} ) {
 
 my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
 
-$all_last_versions->execute( q{therac} ) or die qq{$DBI::errstr};
+$all_last_versions->execute( q{day1} ) or die qq{$DBI::errstr};
 
 while ( my $data = $all_last_versions->fetchrow_hashref ) {
     my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );

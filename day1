@@ -1,0 +1,169 @@
+#!/usr/bin/perl -w
+
+use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+my $assignment_id = q{day1};
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{First-day writing assignment} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 1 );
+
+print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
+
+print <<END;
+
+Thank you for your interest in CS181/181W (Spring 2020)!
+We will be excited to have you in class, space permitting. CS181W is
+limited to 100 students, and CS181W is limited to 25. To be eligible
+to join the class, please complete the assignment below <b>before 3
+p.m. on March 30, 2020</b>. If there are an excess of submissions,
+we will choose students by lottery.
+
+<hr>
+
+To prepare for the first day of class, <b>please read the article</b> by
+Scheiber and Conger, <a
+href="https://www.nytimes.com/interactive/2020/02/18/magazine/google-revolt.html">"The
+Great Google Revolt," N.Y. Times Magazine, Feb. 18, 2020</a>.
+In addition, please <b>optionally</b>
+consult any of these additional articles:
+    <ol>
+    <li>Brin and Page, <a href="http://infolab.stanford.edu/%7Ebackrub/google.html">"The Anatomy of a Large-Scale Hypertextual Web Search Engine," WWW '98 (1998)</a>
+    <li>Grind, Schechner, McMillan, and West, <a href="https://www.wsj.com/articles/how-google-interferes-with-its-search-algorithms-and-changes-your-results-11573823753?shareToken=std447025281e84fdab06377134c1bc81e">"How Google Interferes With Its Search Algorithms and Changes Your Results," Wall St. J., Nov. 15, 2019</a>
+    </ol>
+<p>
+<b>Now, answer:</b><p>
+
+<div class="well">
+
+In 1998, two Stanford students (Sergey Brin and Lawrence Page)
+published a research paper that discussed the increasingly commercial,
+non-transparent, and advertising-driven nature of Web search
+engines. "[W]e expect that advertising funded search engines will be
+inherently biased towards the advertisers and away from the needs of
+the consumers," they wrote, and "we believe the issue of advertising
+causes enough mixed incentives that it is crucial to have a
+competitive search engine that is transparent and in the academic
+realm." (<a
+href="http://infolab.stanford.edu/%7Ebackrub/google.html">Optional
+reading 1, above</a>.) "With Google," Brin and Page wrote, "we have a
+strong goal to push more development and understanding into the
+academic realm."
+
+<p><p>
+
+Twenty-two years later, Google is no longer an academic research
+project&mdash; has become one of the most largest companies in the
+world. The company is thoroughly enmeshed in the commercial pressures
+it was designed to push back against.  The company has a financial
+incentive to sell digital services to whoever will pay for them, to
+modify its products in ways that make the company more money, and to
+pressure its employees to fall into line.
+
+<p><p>
+
+In 400 words at most, give your <b>advice to the Board of
+Directors</b> of Google's parent company (Alphabet Inc.) about what
+they should do over the next 18 months.  Choose at most three specific
+programs, policies, initiatives, or directives that the company should
+adopt in your view, and try to persuade the Board to adopt them.<p>
+</div>
+END
+
+print <<"END";
+Please:
+<ul>
+<li>Write your memo in the form below.
+<li>Write concisely, specifically, and appropriately for your audience (the Alphabet Board of Directors).
+<li>You may use this <a href="example-memo-format.pdf">example of the memo format</a>, written by one of the past CAs, as a reference.</li>
+<li>Respect the requested word count (do not go over).</li>
+<li>Save your work early and often, by using the &ldquo;Save&rdquo; button.</li>
+<li>Finish by 3 p.m. on March 30, 2020.</li>
+</ul>
+<p><hr><p>
+END
+
+
+my $text = qq{<b>To:</b> Board of Directors, Alphabet Corp.<br><b>From:</b> ${display_name}<br><b>Subject:</b> Re: Request for memo re: the next 18 months<br><br>[memo goes here]};
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, $assignment_id ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='${assignment_id}'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;
