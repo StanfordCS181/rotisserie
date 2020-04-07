@@ -9,9 +9,9 @@ if ( scalar @ARGV != 1 ) {
 
 my $class = $ARGV[ 0 ];
 
-#die unless $class eq q{CS181} or $class eq q{CS181W};
+die unless $class eq q{CS181} or $class eq q{CS181W};
 
-my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_winter2018} ) or die qq{$DBI::errstr};
+my $dbh = DBI->connect( q{dbi:Pg:dbname=cs181_spring2020} ) or die qq{$DBI::errstr};
 
 my $adder = $dbh->prepare( q{UPDATE users SET class = ? WHERE sunetid = ?} ) or die qq{$DBI::errstr};
 
