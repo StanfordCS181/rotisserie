@@ -8,7 +8,7 @@ use POSIX;
 
 print qq{Content-type: text/html\n\n};
 
-print_header( q{The Luring Lottery} );
+print_header( q{Therac 25 writing assignment} );
 
 my $dbh = &database;
 
@@ -16,26 +16,45 @@ my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 0 );
 
 print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
 
-print q{Based on the Hofstadter reading, we will be holding a Luring
-Lottery in class on April 13, giving away up to $1,000 of
-Prof. Winstein&rsquo;s personal money to one of you. (<i>Q: Is this real? A: Yes.</i>) The prize will be $1,000/N, where
-N is the total number of entries submitted. The prize will be awarded to a single entry chosen
-uniformly at random among all entries. Just as in the Hofstadter
-column, you may submit any (non-negative integral) number of entries for
-yourself. The more entries you submit, the greater your chance of winning. <b>You may not discuss this assignment with anybody else.</b>
+print q{Please read the paper <a href="http://sunnyday.mit.edu/papers/therac.pdf">Medical Devices: the Therac-25</a> (1995), by Nancy Leveson. We suggest reading the paper in multiple passes, to get the outline and larger points before diving in to the details. Start with a quick scan by reading the introduction, the bolded headings, and all of the figures. Scan the last section (&ldquo;Causal Factors&rdquo;). Get an idea of the larger structure and message of the paper. Then, read the paper fully from the beginning. Take notes as you read. What do you find surprising? Are there statements you disagree with? What larger points is the author trying to make?<p>};
 
-<p> Below, please specify the number of entries you are submitting,
-and persuasively justify this decision (in about <b>150 words</b>),
-referencing the arguments made in the reading. Please save
-early and often, and save your final answer before <b>noon
-on Monday, April 13</b>.<p><hr><p>};
+print q{<b>Writing assignment:</b> You have been hired as an intern at a medical-device manufacturer. You receive the following memo from your boss:<p>};
 
-my $text = qq{<b>Official CS181/CS181W Luring Lottery Entry</b><br><b>From:</b> ${display_name}<br><b>Number of entries I am submitting:</b> [number goes here]<br><br>[memo goes here]};
+print qq{<div class="well">
+<b>To:</b> ${display_name}<br>
+<b>From:</b> The Boss<br>
+<b>Subject:</b> Request for memo re: Therac 25<br><br>
+
+We are aware of a series of tragic incidents related to the Therac 25 linac, and curious what implications this case study may have for our own medical-device business. Please prepare a 400-word technical memo for our engineering and management staff on the following topics.<p>
+
+<ol type="a">
+<li>As an executive summary, what are the most important points for our staff to know about the Therac 25 incidents?
+
+<li>What is one engineering recommendation you would make to our technical staff, as a result of these incidents? <span class="text-muted">Support this recommendation with persuasive evidence.</span>
+
+<li>What is one procedural recommendation you would make to our management staff, as a result of these incidents? <span class="text-muted">Support this recommendation with persuasive evidence.</span>
+</ol>
+</div><p>};
+
+print <<"END";
+Please:
+<ul>
+<li>Write your response in the form below in the style of a readable, concise memo with a clear structure. You may use this <a href="example-memo-format.pdf">example of the format</a>, written by one of your CAs, as a reference.</li>
+<li>Make specific recommendations.</li>
+<li>Respect the requested word count (plus or minus 5%).</li>
+<li>Save your work early and often, by using the &ldquo;Save&rdquo; button.</li>
+<li>Finish by noon on Wednesday, April 15, 2020.</li>
+</ul>
+<p><hr><p>
+END
+
+
+my $text = qq{<b>To:</b> The Boss<br><b>From:</b> ${display_name}<br><b>Subject:</b> Re: Request for memo re: Therac 25<br><br>[memo goes here]};
 my $timestamp = q{never};
 
 my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
 
-$lastversion->execute( $sunetid, q{lottery} ) or die qq{$DBI::errstr};
+$lastversion->execute( $sunetid, q{therac} ) or die qq{$DBI::errstr};
 
 if ( my $data = $lastversion->fetchrow_hashref ) {
     $text = HTML::Entities::encode_entities( $data->{ contents } );
@@ -98,7 +117,7 @@ window.addEventListener("beforeunload", function( event ) {
 <form action='/submit' method='post' onsubmit="reset_orig_text()">
 <input id='default' type='hidden' name='content' value='${text}'>
 <trix-editor id='trix-editor' input='default'></trix-editor>
-<input name='assignment' type='hidden' value='lottery'><br>
+<input name='assignment' type='hidden' value='therac'><br>
 <div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
 <div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
 </form>
