@@ -48,7 +48,7 @@ if ( $class ne q{staff} ) {
   &finish;
 }
 
-my $random_sunetid = $dbh->prepare( q{select sunetid from users where (class='CS181W' or class='CS181') and sunetid NOT IN (select sunetid from coldcalled) order by random() limit 1} ) or die qq{$DBI::errstr};
+my $random_sunetid = $dbh->prepare( q{select users.sunetid from users,writing where users.sunetid = writing.sunetid AND writing.assignment = 'refclass' AND (class='CS181W' or class='CS181') and users.sunetid NOT IN (select sunetid from coldcalled) order by random() limit 1} ) or die qq{$DBI::errstr};
 
 my $insert = $dbh->prepare( q{INSERT INTO coldcalled VALUES (?)} ) or die qq{$DBI::errstr};
 
