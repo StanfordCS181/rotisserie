@@ -1,0 +1,118 @@
+#!/usr/bin/perl -w
+
+use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+print_header( q{Kyllo v. United States} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh, 0 );
+
+print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
+
+print q{In 2001, the U.S. Supreme Court issued a decision in the case
+of Kyllo v. United States, concerning the privacy implications of
+&ldquo;technological enhancement of ordinary perception.&rdquo;
+
+<p>
+
+In 300 words total, please first give a <b>concise summary</b> of the
+most important findings in the majority opinion, as you would if
+explaining the case's importance to a friend or busy coworker. Then,
+state clearly and briefly justify <b>your opinion</b> about whether
+the majority opinion is correct. Did the court describe a workable
+way of resolving these questions? Why or why not?<p><hr><p>};
+
+print <<"END";
+Please:
+<ul>
+<li>Write your response in the form below in the style of a readable, concise memo with a clear structure.</li>
+<li>Respect the requested word count (plus or minus 5%).</li>
+<li>Save your work early and often, by using the &ldquo;Save&rdquo; button.</li>
+<li>Finish by 3 p.m. on Wednesday, June 3, 2020.</li>
+</ul>
+<p><hr><p>
+END
+
+
+my $text = qq{[memo goes here]};
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{kyllo} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='kyllo'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+&finish;

@@ -1,0 +1,185 @@
+#!/usr/bin/perl -w
+
+use strict;
+BEGIN { push @INC, q{/home/keithw/rotisserie} }
+require q{login.pl};
+use HTML::Entities;
+use POSIX;
+
+print qq{Content-type: text/html\n\n};
+
+my $target_assignment = q{aidiscrim};
+
+print_header( q{Automated decision-making assignment (Response)} );
+
+my $dbh = &database;
+
+my ( $sunetid, $display_name, $first_name, $class ) = login ( $dbh );
+
+print qq{<h4>Welcome, ${first_name} <span class="text-muted">(${class})</span>.</h4><p>};
+
+print q{Please scan your class's essays (below), then write a focused 200-word response using  one particular classmate&rsquo;s essay that you have been randomly assigned as a jumping-off point.<p>
+
+Possible ways to structure your response: Is the argument persuasive and practical? How would you argue against the points made by the writer, if you had to? What constructive feedback or interesting points can you make, taking the author&rsquo;s own essay as a jumping-off point?<p>
+<div class="well">};
+
+my $response_target = $dbh->prepare( q{SELECT responds_to FROM rotisserie WHERE sunetid = ? AND assignment = ?} ) or die qq{$DBI::errstr};
+$response_target->execute( $sunetid, $target_assignment ) or die qq{$DBI::errstr};
+
+my $target = undef;
+if ( my $data = $response_target->fetchrow_hashref ) {
+  $target = $data->{ responds_to };
+}
+
+if ( not defined $target ) {
+  print q{(classmate&rsquo;s essay not found&mdash;if you submitted to the assignment on time on Monday, please contact the course staff)};
+} else {
+  my $get_target = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+  $get_target->execute( $target, $target_assignment ) or die qq{$DBI::errstr};
+
+  if ( my $data = $get_target->fetchrow_hashref ) {
+    my $text2 = $data->{ contents };
+    $text2 =~ s{[ \t\n]+/}{ }g;
+    my $wordcount = scalar (split / +/, $text2);
+    $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+
+    print qq{<div class="well trix-content">$data->{ contents }</div>};
+  } else {
+    print q{(classmate&rsquo;s essay not found&mdash;please contact the course staff)};
+  }
+}
+
+print q{</div>};
+
+print q{Please save your response often, and save your final version before class on Wednesday, April 29.<p><hr><p>};
+
+my $text = qq{};
+my $timestamp = q{never};
+
+my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+$lastversion->execute( $sunetid, q{aidiscrimresponse} ) or die qq{$DBI::errstr};
+
+if ( my $data = $lastversion->fetchrow_hashref ) {
+    $text = HTML::Entities::encode_entities( $data->{ contents } );
+    $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;}
+    $timestamp =~ s{PM}{p.m.}g;
+
+
+print <<"END";
+<script type="text/javascript">
+var update_wordcount = function( text ) {
+   text2 = text.replace( /[ \\t\\n]+/g, " " );
+   var wordcount = text2.split( " " ).length;
+   wordcount = Math.round( wordcount / 10.0 ) * 10;
+   document.getElementById("wordcount").innerHTML = wordcount;
+};
+
+var orig_text = "";
+
+var reset_orig_text = function() {
+   orig_text = document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var is_clean = function() {
+   return orig_text === document.getElementById("trix-editor").editor.element.innerHTML;
+};
+
+var update_dirty = function() {
+   document.getElementById("dirty").innerHTML = is_clean() ? "" : "(you have unsaved changes)";
+   document.getElementById("submitbutton").disabled = is_clean();
+};
+
+document.addEventListener("trix-change", function() { update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() ); update_dirty(); } );
+
+document.addEventListener("trix-initialize", function() {
+   update_wordcount( document.getElementById("trix-editor").editor.getDocument().toString() );
+   reset_orig_text();
+   update_dirty();
+} );
+
+window.addEventListener("beforeunload", function( event ) {
+   if ( !is_clean() ) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes.";
+      return "You have unsaved changes.";
+   }
+});
+</script>
+
+<style type="text/css">
+#submitbutton[disabled] {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+}
+</style>
+
+<form action='/submit' method='post' onsubmit="reset_orig_text()">
+<input id='default' type='hidden' name='content' value='${text}'>
+<trix-editor id='trix-editor' input='default'></trix-editor>
+<input name='assignment' type='hidden' value='aidiscrimresponse'><br>
+<div class="col-md-7"><span class="text-muted">Word count:</span> about <span id="wordcount"></span>.<br><span class="text-muted">Last saved:</span> ${timestamp}</span> <span id="dirty"></span></div>
+<div class="col-md-5"><div align="right"><input id='submitbutton' type='submit' value='Save' disabled='true'><br><span class="text-muted">(can continue to edit until the deadline)</span></div></div>
+</form>
+END
+
+print q{<div class="row"></div>};
+
+print q{<div class="page-header"><h4>Memos (and responses) by your classmates</h4></div>};
+
+my $all_last_versions = $dbh->prepare( q{SELECT DISTINCT ON (writing.sunetid) writing.sunetid, hits.name, EXTRACT(EPOCH FROM submitted) AS timestamp, contents FROM writing, users, hits WHERE assignment = ? AND writing.sunetid=users.sunetid AND writing.sunetid=hits.sunetid AND class != 'staff' AND class != 'waitlist' ORDER BY sunetid, submitted DESC} ) or die qq{$DBI::errstr};
+
+$all_last_versions->execute( $target_assignment ) or die qq{$DBI::errstr};
+
+my $find_response_responder = $dbh->prepare( q{SELECT sunetid FROM rotisserie WHERE responds_to = ? AND assignment = ?} ) or die qq{$DBI::errstr};
+
+#my $lastversion = $dbh->prepare( q{SELECT contents, EXTRACT(EPOCH FROM submitted) AS timestamp FROM writing WHERE sunetid = ? AND assignment = ? ORDER BY submitted DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+my $getname = $dbh->prepare( q{SELECT name FROM hits WHERE sunetid = ? ORDER BY timestamp DESC LIMIT 1} ) or die qq{$DBI::errstr};
+
+while ( my $data = $all_last_versions->fetchrow_hashref ) {
+    my $sunetid = HTML::Entities::encode_entities( $data->{ sunetid } );
+    my $name = HTML::Entities::encode_entities( $data->{ name } );
+    my $timestamp = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $data->{ timestamp } );
+    $timestamp =~ s{AM}{a.m.}g;
+    $timestamp =~ s{PM}{p.m.}g;
+
+    my $text2 = $data->{ contents };
+    $text2 =~ s{[ \t\n]+/}{ }g;
+    my $wordcount = scalar (split / +/, $text2);
+    $wordcount = 10 * int( $wordcount / 10.0 + 0.5 );
+
+    print qq{<h4 id="essay-header">${name} <span class="text-muted">&lt;${sunetid}&gt;, about $wordcount words</span></h4>};
+    print qq{<div class="well trix-content" id="essay">$data->{ contents }</div>};
+
+    # get the responder
+    $find_response_responder->execute( $data->{ sunetid }, $target_assignment ) or die qq{$DBI::errstr};
+    if ( my $frr = $find_response_responder->fetchrow_hashref ) {
+      $lastversion->execute( $frr->{ sunetid }, $target_assignment . q{response} ) or die qq{$DBI::errstr};
+      if ( my $lv = $lastversion->fetchrow_hashref ) {
+	my $sunetid2 = HTML::Entities::encode_entities( $frr->{ sunetid } );
+	$getname->execute( $frr->{ sunetid } ) or die qq{$DBI::errstr};
+	my $name2 = q{unknown};
+	if ( my $n = $getname->fetchrow_hashref ) { $name2 = HTML::Entities::encode_entities( $n->{ name } ); }
+	HTML::Entities::encode_entities( $lv->{ name } );
+	my $timestamp2 = POSIX::strftime( q{%B %e, %I:%M %p}, localtime $lv->{ timestamp } );
+	$timestamp2 =~ s{AM}{a.m.}g;
+	$timestamp2 =~ s{PM}{p.m.}g;
+
+	my $text3 = $lv->{ contents };
+	$text3 =~ s{[ \t\n]+/}{ }g;
+	my $wordcount2 = scalar (split / +/, $text3);
+	$wordcount2 = 10 * int( $wordcount2 / 10.0 + 0.5 );
+
+	print qq{<div class="col-xs-1"></div><div class="col-xs-11"><h5 id="response-header">Response by ${name2} <span class="text-muted">&lt;${sunetid2}&gt;, about $wordcount2 words</span></h5>};
+	print qq{<div class="well trix-content" id="response">$lv->{ contents }</div></div><br>};
+      }
+      print qq{<p><hr><p>};
+    }
+}
+
+&finish;
